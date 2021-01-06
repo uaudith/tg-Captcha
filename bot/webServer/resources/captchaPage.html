@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram</title>
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+  <span class="navbar-brand mb-1 h1">{{ctitle}}</span>
+    </nav>
+    <br /><br />
+    <form action="/response" method="POST">
+        <div class="text-center">
+        <div class="h-captcha g-recaptcha" data-sitekey="acece2fb-a692-41fd-8507-1a5b630ef353"></div>
+      <br /><br />
+        <input type="hidden" name="ids" value="{{ uc }}}" />
+      <input type="submit" class="btn btn-primary btn-lg active" value="Join Group" />
+        </div>
+    </form>
+  </body>
+</html>
