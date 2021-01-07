@@ -158,3 +158,4 @@ gen
 # Local History for Visual Studio Code
 .history/
 
+*.session
