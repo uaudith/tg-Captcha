@@ -9,15 +9,16 @@ from pyrogram.types import Message, ChatPermissions
 from ..config import config
 from ..helpers import get_buttons, mentionStr
 from ..userAnswers import taskStorage, addTask
+from ..captchaBot import mybot
+
+logger = logging.getLogger(__name__)
 
 
 async def handleNewMember(c: Client, msg: Message):
-    print("funtion called")
     user_id = msg.from_user.id
     chat_id = msg.chat.id
-    if msg.from_user.id not in msg.new_chat_members and \
-            any(user_id == member.user.id async for member in
-                c.iter_chat_members(chat_id, filter=Filters.ADMINISTRATORS)):
+    logger.info("Handling new member %d joining in %d chat", user_id, chat_id)
+    if user_id not in msg.new_chat_members and await isAdmin(user_id, chat_id):
         logging.info("admin %d added members", msg.from_user.id)
         return  # admin adding members
 
@@ -27,8 +28,8 @@ async def handleNewMember(c: Client, msg: Message):
         await c.kick_chat_member(chat_id, msg.from_user.id, int(time() + config.KICK_TIME * 3600))
         return
     sendingStr = f"Wellcome {mentionStr(msg.from_user)} !\n " \
-                 f"Please verify yourself within {config.MAX_TIME_TO_SOLVE} Minutes"
-    if msg.from_user.id not in msg.new_chat_members:
+                 f"Please verify yourself within {config.MAX_TIME_TO_SOLVE} Seconds"
+    if msg.from_user not in msg.new_chat_members:
         # nameConcat = ", ".join(x.first_name or x.last_name for x in msg.new_chat_members)
         sendingStr = f"{mentionStr(msg.from_user)}, You have to do the verification for the members you are adding"
 
@@ -38,8 +39,20 @@ async def handleNewMember(c: Client, msg: Message):
 
 
 async def timeOutTask(c, msg, sent, user_id):
-    await asyncio.sleep(config.MAX_TIME_TO_SOLVE)
-    await c.kick_chat_member(msg.chat.id, msg.from_user.id, int(time() + config.KICK_TIME * 3600))
-    await sent.edit(f"{mentionStr(msg.from_user)} failed to verify. He can "
-                    f"try again after {config.KICK_TIME} hours")
-    await taskStorage.pop((user_id, msg.chat.id))
+    try:
+        await asyncio.sleep(config.MAX_TIME_TO_SOLVE)
+        await c.kick_chat_member(sent.chat.id, sent.from_user.id, int(time() + config.KICK_TIME * 3600))
+        await sent.edit(f"{mentionStr(msg.from_user)} failed to verify. He can "
+                        f"try again after {config.KICK_TIME} hours")
+    except asyncio.CancelledError:
+        logger.info("user %d has solved before the deadline", user_id)
+        await sent.delete()
+    finally:
+        del taskStorage[(user_id, msg.chat.id)]
+
+
+async def isAdmin(user: int, chat: int) -> bool:
+    async for chatMem in mybot.iter_chat_members(chat, filter=Filters.ADMINISTRATORS):
+        if chatMem.user.id == user:
+            return True
+    return False

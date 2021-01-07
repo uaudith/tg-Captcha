@@ -33,7 +33,7 @@ async def resp(request):
         return html_response("<h1>Verification Failed</h1>")
     try:
         user_chat: userChat = userChat.parseStr(data['ids'])
-        logger.info("correct by user %s in %s chat", user_chat.userId, user_chat.userId)
+        logger.info("correct by user %s in %s chat", user_chat.userId, user_chat.chatId)
     except USERCHAT_STR_WRONG_FORMAT:
         return html_response("<h1>Thanks for Solving </br> But url format is incorrect</h1>")
     else:

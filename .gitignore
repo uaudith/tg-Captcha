@@ -158,5 +158,9 @@ gen
 # Local History for Visual Studio Code
 .history/
 
+# private files
 *.session
+*.env
+*.ini
+*.conf
 .vscode
