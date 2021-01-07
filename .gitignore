@@ -159,3 +159,4 @@ gen
 .history/
 
 *.session
+.vscode
