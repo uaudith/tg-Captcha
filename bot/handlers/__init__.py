@@ -1,2 +1,2 @@
-from .newMembers import handleNewMember
+from .newMembers import handleNewMember, initMe
 from .onVerificationSuccess import onSuccess

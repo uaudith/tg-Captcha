@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  captcha:
+      build:
+        context: .
+      restart: on-failure
+      ports:
+      - "127.0.0.1:81:80"
+      env_file:
+        - config.env

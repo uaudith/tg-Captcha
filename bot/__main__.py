@@ -2,12 +2,13 @@ import asyncio
 
 from pyrogram import idle
 
-from bot import mybot, startwebserver
+from bot import mybot, startwebserver, initMe
 
 
 async def main():
     await startwebserver()
     await mybot.start()
+    await initMe()
     await idle()
     await mybot.stop()
 

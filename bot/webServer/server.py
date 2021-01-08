@@ -34,11 +34,12 @@ async def resp(request):
     try:
         user_chat: userChat = userChat.parseStr(data['ids'])
         logger.info("correct by user %s in %s chat", user_chat.userId, user_chat.chatId)
-    except USERCHAT_STR_WRONG_FORMAT:
-        return html_response("<h1>Thanks for Solving </br> But url format is incorrect</h1>")
-    else:
         await onSuccess(user_chat.userId, user_chat.chatId)  # unMute in the group
         return html_response("<h1>Verification Successful</h1>")
+    except USERCHAT_STR_WRONG_FORMAT:
+        return html_response("<h1>Thanks for Solving </br> But url format is incorrect</h1>")
+    except KeyError:
+        return html_response("<h1>Sorry. Not expected user</h1> </br> Maybe your time limit is reached !")
 
 
 @routes.get("/")
