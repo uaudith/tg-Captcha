@@ -7,6 +7,7 @@ from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid
 from pyrogram.methods.chats.iter_chat_members import Filters
 from pyrogram.types import Message, ChatPermissions
 
+from ..channelLoger import logInChannel
 from ..config import config
 from ..helpers import get_buttons, mentionStr
 from ..userAnswers import taskStorage, addTask
@@ -25,6 +26,8 @@ async def introduceMe(msg):
     await msg.reply("Thank you for adding me 🙌\n\n"
                     "From now on i will protect your group from bots and spammers ⚔ \n\n"
                     "Make sure to promote me as an admin with ban permission 🛡️ ")
+    await logInChannel(f"Added to new group #{msg.chat.id}\n"
+                       f"Chat name : `{msg.chat.title}`")
 
 
 async def handleNewMember(c: Client, msg: Message):
@@ -37,8 +40,11 @@ async def handleNewMember(c: Client, msg: Message):
     if user_id not in msg.new_chat_members and await isAdmin(user_id, chat_id):
         logging.info("admin %d added members", msg.from_user.id)
         return  # admin adding members
-
-    await msg.chat.restrict_member(user_id, ChatPermissions())
+    try:
+        await msg.chat.restrict_member(user_id, ChatPermissions())
+    except ChatAdminRequired:
+        await msg.reply("I need to be an admin to work properly")
+        return
     if (user_id, chat_id) in taskStorage:
         sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
         await tryToKick(c, msg, sent)

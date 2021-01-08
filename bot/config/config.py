@@ -5,6 +5,7 @@ class config:
     BOT_TOKEN = os.environ.get("BOT_TOKEN")
     API_HASH = os.environ.get("API_HASH")
     API_ID = int(os.environ.get("API_ID"))
+    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL"), 0)
     MAX_TIME_TO_SOLVE = int(os.environ.get("MAX_TIME_TO_SOLVE", 60))  # SECONDS
     KICK_TIME = int(os.environ.get("KICK_TIME", 24))  # hours
     HCAPTCHA_API = os.environ.get("HCAPTCHA_API")
