@@ -57,12 +57,15 @@ async def root_route_handler(_):
 @routes.get("/{chatid}")
 async def index(request):
     argDict = request.rel_url.query
-    context = {'uc': argDict['id'] + '_' + request.match_info['chatid'],
-               'ctitle': f'Hello {argDict.get("first_name", "there")}',
-               'payload': getCheckString(argDict),
-               'hash': argDict['hash']}
-    return await aiohttp_jinja2.render_template_async(
-        'captchaPage.html', request, context=context)
+    try:
+        context = {'uc': argDict['id'] + '_' + request.match_info['chatid'],
+                   'ctitle': f'Hello {argDict.get("first_name", "there")}',
+                   'payload': getCheckString(argDict),
+                   'hash': argDict['hash']}
+        return await aiohttp_jinja2.render_template_async(
+            'captchaPage.html', request, context=context)
+    except KeyError:
+        return html_response("<h1>Sorry</h1> </br> There are missing arguments")
 
 
 async def checkResponse(response: str, session):
