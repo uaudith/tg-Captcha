@@ -7,6 +7,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
+from ..webServer.hash import checkHash, getCheckString
 from ..Exceptions import USERCHAT_STR_WRONG_FORMAT
 from ..config import config
 from ..handlers import onSuccess
@@ -14,6 +15,8 @@ from ..userChat import userChat
 
 routes = web.RouteTableDef()
 logger: Final = logging.getLogger(__name__)
+
+routes.static('/styles.css', 'bot/webServer/resources/')
 
 
 def html_response(text: str):
@@ -34,10 +37,14 @@ async def resp(request):
     try:
         user_chat: userChat = userChat.parseStr(data['ids'])
         logger.info("correct by user %s in %s chat", user_chat.userId, user_chat.chatId)
-        await onSuccess(user_chat.userId, user_chat.chatId)  # unMute in the group
-        return html_response("<h1>Verification Successful</h1>")
+        checkString = data['payload'].replace("\r\n", "\n")
+        if checkHash(checkString, data['hash']):
+            await onSuccess(user_chat.userId, user_chat.chatId)  # unMute in the group
+            return html_response("<h1>Verification Successful</h1>")
+        else:
+            return html_response("<h1>Thanks for Solving </h1> </br> But it was a fake url")
     except USERCHAT_STR_WRONG_FORMAT:
-        return html_response("<h1>Thanks for Solving </br> But url format is incorrect</h1>")
+        return html_response("<h1>Thanks for Solving </h1> </br> But url format is incorrect")
     except KeyError:
         return html_response("<h1>Sorry. Not expected user</h1> </br> Maybe your time limit is reached !")
 
@@ -47,10 +54,13 @@ async def root_route_handler(_):
     return web.json_response({"status": "running"})
 
 
-@routes.get("/{userchat}")
+@routes.get("/{chatid}")
 async def index(request):
-    context = {'uc': request.match_info['userchat'],
-               'ctitle': 'Hello there'}
+    argDict = request.rel_url.query
+    context = {'uc': argDict['id'] + '_' + request.match_info['chatid'],
+               'ctitle': f'Hello {argDict.get("first_name", "there")}',
+               'payload': getCheckString(argDict),
+               'hash': argDict['hash']}
     return await aiohttp_jinja2.render_template_async(
         'captchaPage.html', request, context=context)
 
