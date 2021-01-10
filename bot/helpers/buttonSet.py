@@ -1,10 +1,11 @@
-from pyrogram.types import InlineKeyboardButton as Btn, InlineKeyboardMarkup
+from pyrogram.raw.types import InputUserSelf
+from pyrogram.types import InlineKeyboardMarkup
 
 from bot.config import config
+from ..myInlineKeyboardBtn import myInlineKeyboardButton
 
 
-def get_buttons(userId: int, chatId: int) -> InlineKeyboardMarkup:
-    user_chat = str(userId)+'_'+str(chatId)
-    return InlineKeyboardMarkup([
-        [Btn("Verify", url=config.FQDN+f"/{user_chat}")]
-        ])
+def authUrlButtons(chatID: int):
+    btn = myInlineKeyboardButton(text="Verify", url=config.FQDN+f"/{chatID}",
+                                 fwd_text="why forward the message", bot=InputUserSelf())
+    return InlineKeyboardMarkup([[btn]])

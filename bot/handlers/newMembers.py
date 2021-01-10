@@ -9,7 +9,8 @@ from pyrogram.types import Message, ChatPermissions
 
 from ..channelLoger import logInChannel
 from ..config import config
-from ..helpers import get_buttons, mentionStr
+from ..helpers import mentionStr
+from ..helpers.buttonSet import authUrlButtons
 from ..userAnswers import taskStorage, addTask
 from ..captchaBot import mybot
 
@@ -56,7 +57,7 @@ async def handleNewMember(c: Client, msg: Message):
         sendingStr = f"{mentionStr(msg.from_user)}, You have to do the verification for the members you are adding\n" \
                      f"Else you will be banned"
 
-    sent = await msg.reply_text(sendingStr, reply_markup=get_buttons(user_id, chat_id))
+    sent = await msg.reply_text(sendingStr, reply_markup=authUrlButtons(chat_id))
     task = timeOutTask(c, msg, sent, user_id)
     await addTask(user_id, chat_id, task)
 
