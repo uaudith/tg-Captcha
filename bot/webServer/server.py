@@ -16,7 +16,7 @@ from ..userChat import userChat
 routes = web.RouteTableDef()
 logger: Final = logging.getLogger(__name__)
 
-routes.static('/styles.css', 'bot/webServer/resources/')
+routes.static('/assets/', 'bot/webServer/resources/assets/')
 
 
 def html_response(text: str):
@@ -63,7 +63,8 @@ async def index(request):
         context = {'uc': argDict['id'] + '_' + request.match_info['chatid'],
                    'ctitle': f'Hello {argDict.get("first_name", "there")}',
                    'payload': getCheckString(argDict),
-                   'hash': argDict['hash']}
+                   'hash': argDict['hash'],
+                   'pic': argDict.get('photo_url', '/assets/img/user.jpg')}
         return await aiohttp_jinja2.render_template_async(
             'captchaPage.html', request, context=context)
     except KeyError:
