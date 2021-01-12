@@ -26,7 +26,7 @@ def html_response(text: str):
 @routes.post('/response')
 async def resp(request):
     data = await request.post()
-    response = data['h-captcha-response']
+    response = data.get('h-captcha-response', None)
     if not response:
         raise web.HTTPUnauthorized
     logger.info("%s submited form", data['ids'])

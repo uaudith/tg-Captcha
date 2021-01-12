@@ -4,7 +4,7 @@ from time import time
 from typing import Union
 
 from pyrogram import Client
-from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid
+from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid, ChatWriteForbidden
 from pyrogram.methods.chats.iter_chat_members import Filters
 from pyrogram.types import Message, ChatPermissions
 
@@ -45,7 +45,10 @@ async def handleNewMember(c: Client, msg: Message):
     try:
         await msg.chat.restrict_member(user_id, ChatPermissions())
     except ChatAdminRequired:
-        await msg.reply("I need to be an admin to work properly")
+        try:
+            await msg.reply("I need to be an admin to work properly")
+        except ChatWriteForbidden:
+            await msg.chat.leave()
         return
     if (user_id, chat_id) in taskStorage:
         sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
