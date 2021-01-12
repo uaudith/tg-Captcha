@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from time import time
+from typing import Union
 
 from pyrogram import Client
 from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid
@@ -62,14 +63,17 @@ async def handleNewMember(c: Client, msg: Message):
     await addTask(user_id, chat_id, task)
 
 
-async def timeOutTask(c, msg, sent, user_id):
+async def timeOutTask(c, msg, sent, user_id) -> Union[int, None]:
+    startT = time()
     try:
         await asyncio.sleep(config.MAX_TIME_TO_SOLVE)
         if await tryToKick(c, msg, sent):
             await sent.reply(f"{mentionStr(msg.from_user)} failed to verify. He can "
                              f"try again after {config.KICK_TIME} hours")
     except asyncio.CancelledError:
+        lastmsg = await sent.reply(f"{mentionStr(msg.from_user)} verified in `{time() - startT:.1f} seconds` ")
         logger.info("user %d has solved before the deadline", user_id)
+        return lastmsg.message_id
     finally:
         await sent.delete()
         del taskStorage[(user_id, msg.chat.id)]

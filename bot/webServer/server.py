@@ -39,8 +39,10 @@ async def resp(request):
         logger.info("correct by user %s in %s chat", user_chat.userId, user_chat.chatId)
         checkString = data['payload'].replace("\r\n", "\n")
         if checkHash(checkString, data['hash']):
-            await onSuccess(user_chat.userId, user_chat.chatId)  # unMute in the group
-            return html_response("<h1>Verification Successful</h1>")
+            msgId = await onSuccess(user_chat.userId, user_chat.chatId)  # unMute in the group
+            # return html_response("<h1>Verification Successful</h1>")
+            # raise web.HTTPFound(f"tg://privatepost?channel={str(user_chat.chatId).replace('-100','')}&post={msgId}")
+            raise web.HTTPFound(f"https://t.me/c/{str(user_chat.chatId).replace('-100','')}/{msgId}")
         else:
             return html_response("<h1>Thanks for Solving </h1> </br> But it was a fake url")
     except USERCHAT_STR_WRONG_FORMAT:

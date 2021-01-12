@@ -13,3 +13,4 @@ async def addTask(userId: int, chatId: int, task: Awaitable):
 async def markCompleted(userId: int, chatId: int):
     task = taskStorage[(userId, chatId)]
     task.cancel()
+    return await task
