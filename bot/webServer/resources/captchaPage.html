@@ -1,27 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Telegram</title>
-    <script src="https://hcaptcha.com/1/api.js" async defer></script>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-  </head>
-  <body>
-    <nav class="navbar navbar-dark bg-dark">
-  <span class="navbar-brand mb-1 h1">{{ctitle}}</span>
-    </nav>
-    <br /><br />
-    <form action="/response" method="POST">
-        <div class="text-center">
-        <div class="h-captcha g-recaptcha" data-sitekey="acece2fb-a692-41fd-8507-1a5b630ef353"></div>
-      <br /><br />
-            <input type="hidden" name="ids" value="{{ uc }}" />
-            <input type="hidden" name="payload" value="{{ payload }}" />
-            <input type="hidden" name="hash" value="{{ hash }}" />
-      <input type="submit" class="btn btn-primary btn-lg active" value="Join Group" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>uCaptchaBot</title>
+    <meta name="description" content="uCaptchaBot by uaudith">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=ABeeZee">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/css/Footer-Basic.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="assets/css/Navigation-Clean.css">
+</head>
+
+<body style="background: rgb(247,247,247);">
+    <div>
+        <h1 class="shadow d-flex d-md-flex justify-content-center align-items-center justify-content-md-center align-items-md-center rubberBand animated" style="text-align: center;height: 70px;color: rgb(84,84,84);font-style: normal;font-family: ABeeZee, sans-serif;background: #ffffff;">uCaptchaBot</h1>
+    </div>
+    <div>
+        <h3 class="d-flex d-md-flex justify-content-center align-items-center justify-content-md-center align-items-md-center pulse animated" style="font-family: ABeeZee, sans-serif;height: 80px;text-align: center;padding-right: 50px;padding-left: 50px;">Hi {{ctitle}}</h3>
+    </div>
+    <div class="d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center justify-content-md-center align-items-md-center">
+        <div class="border rounded-circle pulse animated" style="background: url(&quot;assets/img/user.jpg&quot;) center / cover no-repeat;height: 150px;width: 150px;margin-bottom: 50px;"></div>
+    </div>
+    <form class="submit-form" method="post" action="/response">
+        <div class="d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center justify-content-md-center align-items-md-center h-captcha g-recaptcha" data-sitekey="acece2fb-a692-41fd-8507-1a5b630ef353"></div>
+        <input class="form-control" type="hidden" name="ids" value="{{ uc }}">
+        <input class="form-control" type="hidden" name="payload" value="{{ payload }}">
+        <input class="form-control" type="hidden" name="hash" value="{{ hash }}">
+        <div class="d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center justify-content-md-center align-items-md-center">
+            <button class="btn btn-primary" type="submit" style="font-family: ABeeZee, sans-serif;margin-top: 10px;">Join Group</button>
         </div>
     </form>
-  </body>
+    <div class="shadow-lg rubberBand animated footer-basic" style="margin-top: 50px;">
+        <footer>
+            <div class="social" style="height: 44px;"><a data-bs-hover-animate="tada" href="#" style="height: 40px;width: 40px;"><i class="fab fa-telegram-plane" data-bs-hover-animate="jello"></i></a></div>
+            <p class="copyright">SLBots © 2021</p>
+        </footer>
+    </div>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
+    <script src="https://hcaptcha.com/1/api.js"></script>
+</body>
+
 </html>

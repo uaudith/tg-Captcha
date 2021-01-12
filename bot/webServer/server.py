@@ -99,7 +99,10 @@ async def start():
         loader=jinja2.FileSystemLoader("bot/webServer/resources/"))  # todo: change path
     runner = aiohttp.web.AppRunner(app)
     await runner.setup()
-    await aiohttp.web.TCPSite(runner, host='0.0.0.0', port=80).start()
+    try:
+        await aiohttp.web.TCPSite(runner, host='0.0.0.0', port=80).start()
+    except PermissionError:
+        await aiohttp.web.TCPSite(runner, host='0.0.0.0', port=8080).start()
     logger.info("WebServer Started")
     # await asyncio.Event().wait()  # blocking
 
