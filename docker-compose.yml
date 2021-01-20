@@ -9,3 +9,5 @@ services:
       - "127.0.0.1:81:80"
       env_file:
         - config.env
+      volumes:
+        - ./db:/app/db

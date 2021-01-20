@@ -10,8 +10,9 @@ from aiohttp import web
 from ..webServer.hash import checkHash, getCheckString
 from ..Exceptions import USERCHAT_STR_WRONG_FORMAT
 from ..config import config
-from ..handlers import onSuccess
+from ..userAnswers import onSuccess
 from ..userChat import userChat
+from ..welcomeMsg import WelcomeMsg
 
 routes = web.RouteTableDef()
 logger: Final = logging.getLogger(__name__)
@@ -65,10 +66,12 @@ async def index(request):
                    'payload': getCheckString(argDict),
                    'hash': argDict['hash'],
                    'pic': argDict.get('photo_url', '/assets/img/user.jpg')}
-        return await aiohttp_jinja2.render_template_async(
-            'captchaPage.html', request, context=context)
     except KeyError:
         return html_response("<h1>Sorry</h1> </br> There are missing arguments")
+    else:
+        WelcomeMsg.fetchWelcome(int(request.match_info['chatid']))  # load to memory
+        return await aiohttp_jinja2.render_template_async(
+            'captchaPage.html', request, context=context)
 
 
 async def checkResponse(response: str, session):

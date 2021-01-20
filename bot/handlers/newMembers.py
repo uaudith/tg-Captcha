@@ -4,16 +4,18 @@ from time import time
 from typing import Union
 
 from pyrogram import Client
-from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid, ChatWriteForbidden
-from pyrogram.methods.chats.iter_chat_members import Filters
+from pyrogram.errors import UserIdInvalid, ChatAdminRequired, UserAdminInvalid, ChatWriteForbidden, \
+    MessageDeleteForbidden
 from pyrogram.types import Message, ChatPermissions
 
 from ..channelLoger import logInChannel
 from ..config import config
-from ..helpers import mentionStr
-from ..helpers.buttonSet import authUrlButtons
+from ..helpers import authUrlButtons, isAdmin, mentionStr, time_formatter
 from ..userAnswers import taskStorage, addTask
 from ..captchaBot import mybot
+from ..welcomeMsg import WelcomeMsg, LastWelcome, getFillings
+from ..failedUsers import FailedUsers
+from ..chatSettings import chatSettings
 
 logger = logging.getLogger(__name__)
 me = None
@@ -27,7 +29,7 @@ async def initMe():
 async def introduceMe(msg):
     await msg.reply("Thank you for adding me 🙌\n\n"
                     "From now on i will protect your group from bots and spammers ⚔ \n\n"
-                    "Make sure to promote me as an admin with ban permission 🛡️ ")
+                    "Make sure to promote me as an admin with ban and delete permission 🛡️ ")
     await logInChannel(f"Added to new group #{msg.chat.id}\n"
                        f"Chat name : `{msg.chat.title}`")
 
@@ -50,9 +52,12 @@ async def handleNewMember(c: Client, msg: Message):
         except ChatWriteForbidden:
             await msg.chat.leave()
         return
+    try:
+        await msg.delete()
+    except MessageDeleteForbidden:
+        pass
     if (user_id, chat_id) in taskStorage:
-        sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
-        await tryToKick(c, msg, sent)
+        # sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
         return
     sendingStr = f"Wellcome {mentionStr(msg.from_user)} !\n " \
                  f"Please verify yourself within {config.MAX_TIME_TO_SOLVE} Seconds"
@@ -68,23 +73,51 @@ async def handleNewMember(c: Client, msg: Message):
 
 async def timeOutTask(c, msg, sent, user_id) -> Union[int, None]:
     startT = time()
+    settings = chatSettings(msg.chat.id)
+    settingsTask = asyncio.shield(
+        asyncio.create_task(settings.getSettings())
+    )
     try:
         await asyncio.sleep(config.MAX_TIME_TO_SOLVE)
-        if await tryToKick(c, msg, sent):
-            await sent.reply(f"{mentionStr(msg.from_user)} failed to verify. He can "
-                             f"try again after {config.KICK_TIME} hours")
+        await settingsTask
+        await tryToKick(c, msg, sent, sendAck=settings.showInfo)
+
     except asyncio.CancelledError:
-        lastmsg = await sent.reply(f"{mentionStr(msg.from_user)} verified in `{time() - startT:.1f} seconds` ")
+        await settingsTask
+        lastmsg = msg
+        if settings.showInfo:
+            lastmsg = await sent.edit(f"{mentionStr(msg.from_user)} #verified in `{time() - startT:.1f} seconds` ")
+        else:
+            await sent.delete()
+        wcMsg: WelcomeMsg = WelcomeMsg.getWelcomeMsg(msg.chat.id)
+        if wcMsg:
+            msgText = wcMsg.caption.format_map(getFillings(msg))
+            welcomeMessage = await lastmsg.reply(msgText, reply_markup=wcMsg.keyboardMarkup)
+            # deletes previuos and keep this welcome as the last one
+            await LastWelcome(msg.chat.id, welcomeMessage.message_id).setAsLast()
         logger.info("user %d has solved before the deadline", user_id)
         return lastmsg.message_id
     finally:
-        await sent.delete()
         del taskStorage[(user_id, msg.chat.id)]
 
 
-async def tryToKick(c, msg, sent) -> bool:
+async def tryToKick(c, msg, sent, sendAck=True) -> bool:
     try:
-        await c.kick_chat_member(msg.chat.id, msg.from_user.id, int(time() + config.KICK_TIME * 3600))
+        failedUser = FailedUsers(msg.from_user.id)
+        kickTime = config.KICK_TIME * 3600  # hours
+        failedCount = await failedUser.getFailedCount()
+        if failedCount > 2:
+            kickTime *= 24 * failedCount  # days
+        await c.kick_chat_member(msg.chat.id, msg.from_user.id, int(time() + kickTime))
+        if sendAck:
+            outStr = f"{mentionStr(msg.from_user)} failed to verify. They can" \
+                     f" try again after {time_formatter(kickTime)}"
+            if failedCount:
+                outStr += f"\n`Failed attempts in a row: {failedCount}`"
+            await sent.edit(outStr)
+        else:
+            await sent.delete()
+        asyncio.create_task(failedUser.submit())
         return True
     except UserIdInvalid:
         logger.info("Seems user was banned by another admin or user left")
@@ -92,10 +125,3 @@ async def tryToKick(c, msg, sent) -> bool:
     except (ChatAdminRequired, UserAdminInvalid) as e:
         await sent.edit(str(e))
         return False
-
-
-async def isAdmin(user: int, chat: int) -> bool:
-    async for chatMem in mybot.iter_chat_members(chat, filter=Filters.ADMINISTRATORS):
-        if chatMem.user.id == user:
-            return True
-    return False

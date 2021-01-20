@@ -1,11 +1,23 @@
 import asyncio
-
+import signal
 from pyrogram import idle
 
-from bot import mybot, startwebserver, initMe
+from bot import mybot, startwebserver, initMe, WelcomeMsg, oldWelcomeDeleteService, \
+    unmuteBeforeTerminatie
 
 
 async def main():
+    try:
+        for signame in {'SIGINT', 'SIGTERM'}:
+            loop.add_signal_handler(
+                getattr(signal, signame),
+                unmuteBeforeTerminatie)
+    except NotImplementedError:
+        pass
+    [asyncio.create_task(task()) for task in (
+        oldWelcomeDeleteService,
+        WelcomeMsg.clear_welcome_cache_service)
+     ]
     await startwebserver()
     await mybot.start()
     await initMe()

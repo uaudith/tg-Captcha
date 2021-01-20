@@ -8,5 +8,5 @@ async def startCmd(_: Client, m: Message):
 
 async def helpCmd(_: Client, m: Message):
     await m.reply("It is simple 🙂\n\n"
-                  "Add me to a group and make me an **admin** 👑\n"
+                  "Add me to a group and make me an **admin** with ban, delete permissions 👑\n"
                   "I will stop spammers and bots with captchas 🛡️")
