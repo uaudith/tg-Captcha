@@ -5,7 +5,18 @@ services:
       build:
         context: .
       restart: on-failure
+      environment:
+        - API_ID=${API_ID}
+        - API_HASH=${API_HASH}
+        - BOT_TOKEN=${BOT_TOKEN}
+        - HCAPTCHA_API=${HCAPTCHA_API}
+        - FQDN=${FQDN}
+        - LOG_CHANNEL=${LOG_CHANNEL}
+        - MAX_TIME_TO_SOLVE=${MAX_TIME_TO_SOLVE}
+        - BOT_USERNAME=${BOT_USERNAME}
       ports:
       - "127.0.0.1:81:80"
       volumes:
-        - ./db:/app/db
+        - captcha:/app/db
+volumes:
+  captcha:
