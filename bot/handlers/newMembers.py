@@ -44,16 +44,6 @@ async def handleNewMember(c: Client, msg: Message):
     if user_id not in msg.new_chat_members and await isAdmin(user_id, chat_id):
         logging.info("admin %d added members", msg.from_user.id)
         return  # admin adding members
-    cMember = await mybot.get_chat_member(chat_id, user_id)
-    if (user_id, chat_id) in taskStorage:
-        # sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
-        return
-    if cMember.status == "restricted":
-        ack = await msg.reply(f"{mentionStr(msg.from_user)} has restrictions by other admins\nCaptcha bot will not "
-                              f"interfere")
-        await asyncio.sleep(20)
-        await ack.delete()
-        return
     try:
         await msg.chat.restrict_member(user_id, ChatPermissions())
     except ChatAdminRequired:
@@ -66,8 +56,10 @@ async def handleNewMember(c: Client, msg: Message):
         await msg.delete()
     except MessageDeleteForbidden:
         pass
-
-    sendingStr = f"Welcome {mentionStr(msg.from_user)} !\n " \
+    if (user_id, chat_id) in taskStorage:
+        # sent = await msg.reply("Kicking this user ..\nHe left without verifying yet joined again now")
+        return
+    sendingStr = f"Wellcome {mentionStr(msg.from_user)} !\n " \
                  f"Please verify yourself within {config.MAX_TIME_TO_SOLVE} Seconds"
     if msg.from_user not in msg.new_chat_members:
         # nameConcat = ", ".join(x.first_name or x.last_name for x in msg.new_chat_members)

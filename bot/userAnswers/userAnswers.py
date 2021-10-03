@@ -28,7 +28,6 @@ def unmuteBeforeTerminatie():
 
 
 async def onSuccess(userId: int, chaId: int):
-
     success = await mybot.unban_chat_member(chaId, userId)
     if success:
         FailedUsers(userId).reset()
